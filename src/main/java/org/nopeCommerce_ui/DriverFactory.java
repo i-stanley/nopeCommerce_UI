@@ -16,7 +16,7 @@ public class DriverFactory {
         Configuration.browser = browser;
         Configuration.headless = Boolean.parseBoolean(headless);
         Configuration.timeout = 8000;
-        Configuration.reportsFolder = "build/reports/tests";
+//        Configuration.reportsFolder = "build/reports/tests";
         Configuration.browserSize = "1920x1080";
         Configuration.pageLoadStrategy = "normal";
         Configuration.screenshots = true;

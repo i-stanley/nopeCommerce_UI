@@ -1,10 +1,10 @@
 pipeline {
-  agent { label 'windows' }
+  agent any
 
   parameters {
-    booleanParam(name: 'HEADLESS', defaultValue: true, description: '')
-    stringParam(name: 'BROWSER', defaultValue: 'chrome', description: '')
-    stringParam(name: 'REMOTE', defaultValue: '', description: '')
+       booleanParam(name: 'HEADLESS', defaultValue: true, description: '')
+       string(name: 'BROWSER', defaultValue: 'chrome', description: '')
+       string(name: 'REMOTE', defaultValue: '', description: '')
   }
 
   options {
@@ -40,8 +40,16 @@ pipeline {
   post {
     always {
       junit allowEmptyResults: true, testResults: 'build/test-results/test/*.xml'
-      archiveArtifacts allowEmptyArchive: true, artifacts: 'build/reports/tests/**/*, build/allure-results/**/*', fingerprint: true
-      allure results: [[path: 'build/allure-results']]
+
+      archiveArtifacts allowEmptyArchive: true,
+      artifacts: 'build/reports/tests/**/*, build/allure-results/**/*',
+      fingerprint: true
+
+       allure(
+            includeProperties: false,
+            jdk: '',
+            results: [[path: 'build/allure-results']]
+          )
     }
   }
 }
