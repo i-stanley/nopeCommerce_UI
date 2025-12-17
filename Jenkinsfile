@@ -15,7 +15,7 @@ pipeline {
     stage('Build & Test') {
       steps {
         script {
-          def gradleCmd = isUnix() ? './gradlew' : 'gradlew.bat'
+          def gradleCmd = tool 'gradle-8.8'
 
           def args = [
             'clean',
@@ -39,11 +39,14 @@ pipeline {
                 usernameVariable: 'TEST_USER',
                 passwordVariable: 'TEST_PASS'
               )
-            ]) {
-              args << "-Duser=${TEST_USER}"
-              args << "-Dpass=${TEST_PASS}"
-
-              runGradle(gradleCmd, args)
+            ])   {
+                 withEnv([
+                   "USER=${TEST_USER}",
+                   "PASS=${TEST_PASS}"
+                 ]) {
+                  args << "-Duser=%USER%"
+                  args << "-Dpass=%PASS%"
+                 runGradle(gradleCmd, args)
             }
 
           } else {
@@ -76,9 +79,10 @@ pipeline {
 // ===== helper =====
 def runGradle(cmd, args) {
   if (isUnix()) {
-    sh 'chmod +x gradlew'
-    sh "${cmd} ${args.join(' ')}"
+    sh "${cmd}/bin/gradle ${args.join(' ')}"
   } else {
-    bat "${cmd} ${args.join(' ')}"
+    bat "\"${cmd}\\bin\\gradle.bat\" ${args.join(' ')}"
   }
 }
+
+
