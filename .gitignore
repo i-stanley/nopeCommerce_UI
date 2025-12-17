@@ -25,4 +25,4 @@ Thumbs.db
 *.log
 
 # Test credentials (local only)
-src/test/resources/credentials.properties
+src/main/resources/test.properties
