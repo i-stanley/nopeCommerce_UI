@@ -15,7 +15,8 @@ pipeline {
     stage('Build & Test') {
       steps {
         script {
-          def gradleCmd = tool 'gradle-8.8'
+          // Jenkins-installed Gradle
+          def gradleHome = tool 'gradle-8.8'
 
           def args = [
             'clean',
@@ -29,7 +30,6 @@ pipeline {
             args << "-Dremote=${params.REMOTE.trim()}"
           }
 
-          // ===== CI vs LOCAL credentials logic =====
           if (env.JENKINS_URL) {
             echo "Running on Jenkins → using Jenkins credentials"
 
@@ -39,19 +39,28 @@ pipeline {
                 usernameVariable: 'TEST_USER',
                 passwordVariable: 'TEST_PASS'
               )
-            ])   {
-                 withEnv([
-                   "USER=${TEST_USER}",
-                   "PASS=${TEST_PASS}"
-                 ]) {
-                  args << "-Duser=%USER%"
-                  args << "-Dpass=%PASS%"
-                 runGradle(gradleCmd, args)
+            ]) {
+              // Use env vars to avoid secret interpolation warning
+              withEnv([
+                "USER=${TEST_USER}",
+                "PASS=${TEST_PASS}"
+              ]) {
+                if (isUnix()) {
+                  sh "${gradleHome}/bin/gradle ${args.join(' ')} -Duser=\$USER -Dpass=\$PASS"
+                } else {
+                  bat "\"${gradleHome}\\bin\\gradle.bat\" ${args.join(' ')} -Duser=%USER% -Dpass=%PASS%"
+                }
+              }
             }
 
           } else {
-            echo "Running locally → using credentials.properties"
-            runGradle(gradleCmd, args)
+            echo "Running locally → using test.properties"
+
+            if (isUnix()) {
+              sh "${gradleHome}/bin/gradle ${args.join(' ')}"
+            } else {
+              bat "\"${gradleHome}\\bin\\gradle.bat\" ${args.join(' ')}"
+            }
           }
         }
       }
@@ -75,14 +84,3 @@ pipeline {
     }
   }
 }
-
-// ===== helper =====
-def runGradle(cmd, args) {
-  if (isUnix()) {
-    sh "${cmd}/bin/gradle ${args.join(' ')}"
-  } else {
-    bat "\"${cmd}\\bin\\gradle.bat\" ${args.join(' ')}"
-  }
-}
-
-
