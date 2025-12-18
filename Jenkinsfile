@@ -17,7 +17,7 @@ pipeline {
         script {
           // Jenkins-installed Gradle
 //           def gradleHome = tool 'gradle-8.8'
-          def gradleHome = tool 'Gradle 8.8'
+          def gradleHome = tool 'Gradle'
 
           def args = [
             'clean',
