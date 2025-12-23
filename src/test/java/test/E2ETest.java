@@ -1,8 +1,9 @@
 package test;
 
-//import org.nopeCommerce_ui.base.LoggedInTestBase;
-
 import com.codeborne.selenide.Selenide;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.nopeCommerce_ui.base.TestBase;
 import org.nopeCommerce_ui.config.Credentials;
 import org.nopeCommerce_ui.constants.TestConstants;
@@ -12,15 +13,13 @@ import org.nopeCommerce_ui.pages.components.HeaderComponents;
 import org.nopeCommerce_ui.pages.components.TopMenuComponent;
 import org.nopeCommerce_ui.pages.product.CategoryPage;
 import org.nopeCommerce_ui.pages.product.ProductDetailsPage;
-import org.testng.Assert;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
+
 
 import java.util.List;
 
 public class E2ETest extends TestBase {
 
-    @BeforeMethod
+    @BeforeEach
     public void setup() {
         HeaderComponents headerComponents = new HeaderComponents();
         headerComponents.clickLogInButton();
@@ -49,7 +48,7 @@ public class E2ETest extends TestBase {
 
         productDetailsPage.addToCart();
 
-        Assert.assertEquals(productDetailsPage.isProductAddedToCart(),
+        Assertions.assertEquals(productDetailsPage.isProductAddedToCart(),
                 TestConstants.ADDED_TO_CART_MESSAGE, "Product was not added to cart");
 
         productDetailsPage.closeAddedToCartMessage();
@@ -61,8 +60,8 @@ public class E2ETest extends TestBase {
         shoppingCartPage.keepOnlyChosenProduct(productName);
         List<String> products = shoppingCartPage.getProducts();
 
-        Assert.assertEquals(products.size(), 1, "Cart didn't contain only 1 product");
-        Assert.assertEquals(products.get(0), productName, "Product in cart is not the chosen one");
+        Assertions.assertEquals(products.size(), 1, "Cart didn't contain only 1 product");
+        Assertions.assertEquals(products.get(0), productName, "Product in cart is not the chosen one");
 
 
     }

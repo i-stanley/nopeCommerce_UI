@@ -1,12 +1,13 @@
 package test;
 
 import lombok.extern.java.Log;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 import org.nopeCommerce_ui.base.TestBase;
 import org.nopeCommerce_ui.config.Credentials;
 import org.nopeCommerce_ui.pages.components.HeaderComponents;
 import org.nopeCommerce_ui.pages.components.TopMenuComponent;
-import org.testng.Assert;
-import org.testng.annotations.Test;
 import org.nopeCommerce_ui.pages.LoginPage;
 import org.nopeCommerce_ui.constants.TestConstants;
 
@@ -16,17 +17,18 @@ public class LoginTest extends TestBase {
     HeaderComponents headerComponents;
     TopMenuComponent topMenuComponent;
 
-
-    @Test(groups = {TestConstants.SMOKE})
+    @Tag("Smoke")
+    @Test
     public void loginTest() {
         headerComponents = new HeaderComponents();
 
         headerComponents.clickLogInButton()
                 .login(Credentials.email(), Credentials.password());
-        Assert.assertEquals(headerComponents.getLogOutText(), TestConstants.SUCCESSFUL_LOGIN_TEXT);
+        Assertions.assertEquals(headerComponents.getLogOutText(), TestConstants.SUCCESSFUL_LOGIN_TEXT);
     }
 
-    @Test(groups = {TestConstants.REGRESSION})
+    @Tag("Regression")
+    @Test
     public void logoutTest() {
         loginPage = new LoginPage();
         headerComponents = new HeaderComponents();
@@ -35,6 +37,6 @@ public class LoginTest extends TestBase {
         loginPage.login(Credentials.email(), Credentials.password());
         headerComponents.clickLogOut();
 
-        Assert.assertEquals(headerComponents.getLogInText(), TestConstants.SUCCESSFUL_LOG_OUT_TEXT);
+        Assertions.assertEquals(headerComponents.getLogInText(), TestConstants.SUCCESSFUL_LOG_OUT_TEXT);
     }
 }

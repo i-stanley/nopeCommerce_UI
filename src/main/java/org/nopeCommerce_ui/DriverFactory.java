@@ -16,10 +16,12 @@ public class DriverFactory {
 
         Configuration.browser = browser;
         Configuration.headless = Boolean.parseBoolean(headless);
+        Configuration.webdriverLogsEnabled = true;
         Configuration.timeout = 8000;
         Configuration.browserSize = "1920x1080";
         Configuration.pageLoadStrategy = "normal";
         Configuration.screenshots = true;
+        Configuration.savePageSource = true;
 
         // Credentials (Jenkins OR local)
         if (user != null && pass != null) {

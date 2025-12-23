@@ -2,9 +2,9 @@ pipeline {
   agent any
 
   parameters {
-    booleanParam(name: 'HEADLESS', defaultValue: true, description: '')
-    string(name: 'BROWSER', defaultValue: 'chrome', description: '')
-    string(name: 'REMOTE', defaultValue: '', description: '')
+    booleanParam(name: 'HEADLESS', defaultValue: true, description: 'Run browser in headless mode')
+    string(name: 'BROWSER', defaultValue: 'chrome', description: 'Browser name')
+    string(name: 'REMOTE', defaultValue: '', description: 'Remote WebDriver URL (optional)')
   }
 
   options {
@@ -15,8 +15,7 @@ pipeline {
     stage('Build & Test') {
       steps {
         script {
-          // Jenkins-installed Gradle
-//           def gradleHome = tool 'gradle-8.8'
+          // Jenkins-installed Gradle (name from Manage Jenkins → Tools)
           def gradleHome = tool 'Gradle'
 
           def args = [
@@ -31,36 +30,28 @@ pipeline {
             args << "-Dremote=${params.REMOTE.trim()}"
           }
 
-          if (env.JENKINS_URL) {
-            echo "Running on Jenkins → using Jenkins credentials"
+          echo "Running tests on Jenkins with Gradle"
 
-            withCredentials([
-              usernamePassword(
-                credentialsId: 'nopcommerce-creds',
-                usernameVariable: 'TEST_USER',
-                passwordVariable: 'TEST_PASS'
-              )
-            ]) {
-              // Use env vars to avoid secret interpolation warning
-              withEnv([
-                "USER=${TEST_USER}",
-                "PASS=${TEST_PASS}"
-              ]) {
-                if (isUnix()) {
-                  sh "${gradleHome}/bin/gradle ${args.join(' ')} -Duser=\$USER -Dpass=\$PASS"
-                } else {
-                  bat "\"${gradleHome}\\bin\\gradle.bat\" ${args.join(' ')} -Duser=%USER% -Dpass=%PASS%"
-                }
-              }
-            }
-
-          } else {
-            echo "Running locally → using test.properties"
+          withCredentials([
+            usernamePassword(
+              credentialsId: 'nopcommerce-creds',
+              usernameVariable: 'TEST_USER',
+              passwordVariable: 'TEST_PASS'
+            )
+          ]) {
 
             if (isUnix()) {
-              sh "${gradleHome}/bin/gradle ${args.join(' ')}"
+              sh """
+                "${gradleHome}/bin/gradle" ${args.join(' ')} \
+                -Duser=\$TEST_USER \
+                -Dpass=\$TEST_PASS
+              """
             } else {
-              bat "\"${gradleHome}\\bin\\gradle.bat\" ${args.join(' ')}"
+              bat """
+                "${gradleHome}\\bin\\gradle.bat" ${args.join(' ')} ^
+                -Duser=%TEST_USER% ^
+                -Dpass=%TEST_PASS%
+              """
             }
           }
         }
