@@ -1,0 +1,106 @@
+name: UI tests (Selenide)
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      browser:
+        description: "Browser to run (chrome/firefox)"
+        required: false
+        default: "chrome"
+      use_selenoid:
+        description: "Start Selenoid in Docker (true/false)"
+        required: false
+        default: "true"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [ chrome, firefox ]
+
+    env:
+      HEADLESS: "true"
+      BROWSER: ${{ matrix.browser }}
+      REMOTE: "http://localhost:4444/wd/hub"
+
+      # put creds into GitHub repo secrets:
+      # Settings -> Secrets and variables -> Actions -> New repository secret
+      TEST_USER: ${{ secrets.TEST_USER }}
+      TEST_PASS: ${{ secrets.TEST_PASS }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Setup Gradle cache
+        uses: gradle/actions/setup-gradle@v3
+
+      # Start Selenoid (Docker) on the runner
+      - name: Start Selenoid
+        if: ${{ github.event_name != 'workflow_dispatch' || inputs.use_selenoid == 'true' }}
+        run: |
+          docker compose up -d
+          docker ps
+          # quick wait until Selenoid responds
+          for i in {1..30}; do
+            if curl -s http://localhost:4444/status | grep -q '"ready":true'; then
+              echo "Selenoid is ready"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "Selenoid did not become ready"
+          curl -s http://localhost:4444/status || true
+          docker logs $(docker ps -q --filter "ancestor=aerokube/selenoid:latest") || true
+          exit 1
+
+      - name: Run tests
+        run: |
+          ./gradlew clean test --no-daemon \
+            -Dheadless=$HEADLESS \
+            -Dbrowser=$BROWSER \
+            -Dremote=$REMOTE \
+            -Duser="$TEST_USER" \
+            -Dpass="$TEST_PASS"
+
+      # Always upload reports, even if tests fail
+      - name: Upload Gradle HTML report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gradle-report-${{ matrix.browser }}
+          path: build/reports/tests/
+
+      - name: Upload Allure results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results-${{ matrix.browser }}
+          path: build/allure-results/
+
+      # Optional: generate Allure HTML and publish as artifact (simple + fast)
+      - name: Generate Allure HTML (artifact)
+        if: always()
+        uses: andgineer/allure-report@v3.6
+        with:
+          allure-results: build/allure-results
+          website: allure-site
+          reports-site-path: .
+      - name: Upload Allure HTML
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-html-${{ matrix.browser }}
+          path: allure-site

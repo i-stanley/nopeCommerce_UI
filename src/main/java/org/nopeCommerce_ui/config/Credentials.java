@@ -27,16 +27,10 @@ public final class Credentials {
     }
 
     public static String email() {
-        return System.getProperty(
-                "user",
-                properties.getProperty("email")
-        );
+        return System.getProperty("user", properties.getProperty("email"));
     }
 
     public static String password() {
-        return System.getProperty(
-                "pass",
-                properties.getProperty("password")
-        );
+        return System.getProperty("pass", properties.getProperty("password"));
     }
 }

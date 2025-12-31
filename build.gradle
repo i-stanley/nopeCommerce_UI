@@ -12,9 +12,7 @@ repositories {
 
 dependencies {
     implementation 'com.codeborne:selenide:7.3.1'
-//    implementation 'org.testng:testng:7.10.2'
     implementation 'org.junit.jupiter:junit-jupiter-api:6.0.1'
-//    implementation 'io.qameta.allure:allure-testng:2.24.0'
     implementation 'io.qameta.allure:allure-junit5:2.24.0'
     implementation 'io.qameta.allure:allure-selenide:2.27.0'
     implementation "org.projectlombok:lombok:1.18.42"
@@ -22,6 +20,11 @@ dependencies {
 }
 
 test {
-//    useTestNG()
     useJUnitPlatform()
+
+    systemProperty "browser", System.getProperty("browser", "chrome")
+    systemProperty "headless", System.getProperty("headless", "true")
+    systemProperty "remote", System.getProperty("remote", "")
+    systemProperty "user", System.getProperty("user", "")
+    systemProperty "pass", System.getProperty("pass", "")
 }
