@@ -1,20 +1,24 @@
-version: "3.8"
+version: "3.7"
 
 services:
   selenoid:
     image: aerokube/selenoid:latest
-    ports:
-      - "4444:4444"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./config:/etc/selenoid
+      # Videos go to runner temp folder (NOT repo)
+      - /tmp/selenoid-video:/opt/selenoid/video
     command:
       - "-conf"
       - "/etc/selenoid/browsers.json"
+      - "-video-output-dir"
+      - "/opt/selenoid/video"
       - "-limit"
       - "5"
       - "-timeout"
       - "5m"
+    ports:
+      - "4444:4444"
 
   selenoid-ui:
     image: aerokube/selenoid-ui:latest

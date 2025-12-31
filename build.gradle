@@ -25,6 +25,4 @@ test {
     systemProperty "browser", System.getProperty("browser", "chrome")
     systemProperty "headless", System.getProperty("headless", "true")
     systemProperty "remote", System.getProperty("remote", "")
-    systemProperty "user", System.getProperty("user", "")
-    systemProperty "pass", System.getProperty("pass", "")
 }
